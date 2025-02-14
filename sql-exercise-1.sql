@@ -1,4 +1,3 @@
--- SCHEMA 
 -- CREATING DATABASE TABLES
 -- In stock items
 CREATE TABLE inventory (
@@ -87,30 +86,35 @@ WHERE id = '14325';
 
 -- adding order id to carts so I can query specific orders
 ALTER TABLE carts
-add order_id VARCHAR;
+ADD order_id VARCHAR;
 
 UPDATE carts
-set order_id = '001'
+SET order_id = '001'
 WHERE id = '12412' OR id = '14263';
 
 UPDATE carts
 set order_id = '002'
 WHERE id = '14325';
 
+-- adding price to the carts table
+ALTER TABLE carts
+ADD price_at_purchase MONEY;
 
--- QUERIES 
+UPDATE carts
+SET price_at_purchase = 2.00;
+
+
+
+-- QUERIES
 SELECT * FROM inventory
 WHERE in_stock_quantity > 10;
 
--- maybe it would be better to use number data type instead of money?
 SELECT * FROM inventory
 WHERE cost::NUMERIC > 5.00;
 
 SELECT * FROM carts
 WHERE date > '2025-1-1';
 
--- more than one item -- This one was tricky for me
--- maybe I could structure the data differently next time
 SELECT order_id
 FROM carts
 GROUP BY order_id
@@ -119,4 +123,16 @@ HAVING COUNT(*) > 1;
 SELECT order_id FROM carts
 WHERE sku = '001';
 
--- I'm stopping here for now, because I don't think we can do any of these without querying multiple tables, and we don't know how to do that yet.
+SELECT sku, SUM(quantity)
+FROM carts
+GROUP BY sku;
+
+SELECT order_id, SUM(quantity)
+FROM carts
+GROUP BY order_id;
+
+SELECT order_id, SUM(quantity * price_at_purchase) AS total_cost
+FROM carts
+GROUP BY order_id
+ORDER BY total_cost DESC
+LIMIT 1;
